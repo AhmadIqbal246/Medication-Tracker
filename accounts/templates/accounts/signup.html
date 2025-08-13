@@ -2,33 +2,38 @@
 
 {% block title %}Sign Up - Medication Reminder{% endblock %}
 
-{% block header %}Sign Up{% endblock %}
+{% block header %}
+<div class="auth-header">
+    <h1>💊 Join Us</h1>
+    <p class="subtitle">Create your account to start tracking medications</p>
+</div>
+{% endblock %}
 
 {% block content %}
 <form method="post">
     {% csrf_token %}
     
     <div class="form-group">
-        <label for="{{ form.username.id_for_label }}">Username:</label>
+        <label for="{{ form.username.id_for_label }}">👤 Username</label>
         {{ form.username }}
         {{ form.username.errors }}
     </div>
     
     <div class="form-group">
-        <label for="{{ form.email.id_for_label }}">Email:</label>
+        <label for="{{ form.email.id_for_label }}">📧 Email Address</label>
         {{ form.email }}
         {{ form.email.errors }}
         <small>{{ form.email.help_text }}</small>
     </div>
     
     <div class="form-group">
-        <label for="{{ form.password1.id_for_label }}">Password:</label>
+        <label for="{{ form.password1.id_for_label }}">🔒 Password</label>
         {{ form.password1 }}
         {{ form.password1.errors }}
     </div>
     
     <div class="form-group">
-        <label for="{{ form.password2.id_for_label }}">Confirm Password:</label>
+        <label for="{{ form.password2.id_for_label }}">🔒 Confirm Password</label>
         {{ form.password2 }}
         {{ form.password2.errors }}
     </div>
@@ -39,10 +44,10 @@
         </div>
     {% endif %}
     
-    <button type="submit">Sign Up</button>
+    <button type="submit">Create Account</button>
     
     <div class="text-center mt-3">
-        <p>Already have an account? <a href="{% url 'accounts:login' %}">Login here</a></p>
+        <p>Already have an account? <a href="{% url 'accounts:login' %}">Sign in here</a></p>
     </div>
 </form>
 {% endblock %}
