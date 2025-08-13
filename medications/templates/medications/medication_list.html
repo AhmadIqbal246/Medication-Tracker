@@ -2,47 +2,48 @@
 
 {% block title %}My Medications - Medication Reminder{% endblock %}
 
-{% block header %}My Medications{% endblock %}
+{% block header %}💊 My Medications{% endblock %}
 
 {% block content %}
-<div class="mb-3">
-    <a href="{% url 'medications:add_medication' %}" class="btn btn-primary">Add New Medication</a>
-</div>
+<div class="main-content">
+    <div class="mb-3">
+        <a href="{% url 'medications:add_medication' %}" class="btn btn-primary">➕ Add New Medication</a>
+    </div>
 
-<!-- Statistics Dashboard -->
-<div class="mb-3" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
-    <h3 style="margin-bottom: 15px; color: #495057;">📊 Dashboard Statistics</h3>
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-        <div class="stat-item" style="flex: 1; min-width: 120px; text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #007bff;">{{ total_medications }}</div>
-            <div style="color: #6c757d;">Total</div>
+    <!-- Statistics Dashboard -->
+    <div class="dashboard-stats">
+        <h3>📊 Dashboard Statistics</h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number" style="color: #667eea;">{{ total_medications }}</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" style="color: #f39c12;">{{ pending_count }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" style="color: #56ab2f;">{{ taken_count }}</div>
+                <div class="stat-label">Taken</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" style="color: #74b9ff;">{{ today_count }}</div>
+                <div class="stat-label">Today</div>
+            </div>
+            {% if overdue_count > 0 %}
+            <div class="stat-item">
+                <div class="stat-number" style="color: #ff416c;">{{ overdue_count }}</div>
+                <div class="stat-label">⚠️ Overdue</div>
+            </div>
+            {% endif %}
         </div>
-        <div class="stat-item" style="flex: 1; min-width: 120px; text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #ffc107;">{{ pending_count }}</div>
-            <div style="color: #6c757d;">Pending</div>
+        <div style="text-align: center; margin-top: 10px; color: #666; font-size: 14px;">
+            Last updated: {{ current_time|date:"M d, Y \a\t H:i" }}
         </div>
-        <div class="stat-item" style="flex: 1; min-width: 120px; text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #28a745;">{{ taken_count }}</div>
-            <div style="color: #6c757d;">Taken</div>
-        </div>
-        <div class="stat-item" style="flex: 1; min-width: 120px; text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #17a2b8;">{{ today_count }}</div>
-            <div style="color: #6c757d;">Today</div>
-        </div>
-        {% if overdue_count > 0 %}
-        <div class="stat-item" style="flex: 1; min-width: 120px; text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #dc3545;">{{ overdue_count }}</div>
-            <div style="color: #6c757d;">⚠️ Overdue</div>
-        </div>
-        {% endif %}
     </div>
-    <div style="text-align: center; margin-top: 10px; color: #6c757d; font-size: 14px;">
-        Last updated: {{ current_time|date:"M d, Y \a\t H:i" }}
-    </div>
-</div>
 
 <!-- Pending Medications -->
-<h2>Pending Medications</h2>
+<h2>Pending Medications (Page {{ pending_medications.number }} of {{ pending_medications.paginator.num_pages }})</h2>
 {% if pending_medications %}
     {% for medication in pending_medications %}
         <div class="medication-card {% if medication.is_overdue %}overdue{% endif %}">
@@ -72,6 +73,30 @@
             </div>
         </div>
     {% endfor %}
+    
+    <!-- Pending Medications Pagination -->
+    {% if pending_medications.paginator.num_pages > 1 %}
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if pending_medications.has_previous %}
+                <a href="?pending_page=1{% if request.GET.taken_page %}&taken_page={{ request.GET.taken_page }}{% endif %}" class="pagination-btn">« First</a>
+                <a href="?pending_page={{ pending_medications.previous_page_number }}{% if request.GET.taken_page %}&taken_page={{ request.GET.taken_page }}{% endif %}" class="pagination-btn">‹ Previous</a>
+            {% endif %}
+            
+            <span class="pagination-info">
+                Page {{ pending_medications.number }} of {{ pending_medications.paginator.num_pages }}
+            </span>
+            
+            {% if pending_medications.has_next %}
+                <a href="?pending_page={{ pending_medications.next_page_number }}{% if request.GET.taken_page %}&taken_page={{ request.GET.taken_page }}{% endif %}" class="pagination-btn">Next ›</a>
+                <a href="?pending_page={{ pending_medications.paginator.num_pages }}{% if request.GET.taken_page %}&taken_page={{ request.GET.taken_page }}{% endif %}" class="pagination-btn">Last »</a>
+            {% endif %}
+        </div>
+        <div class="pagination-summary">
+            Showing {{ pending_medications.start_index }}-{{ pending_medications.end_index }} of {{ pending_medications.paginator.count }} pending medications
+        </div>
+    </div>
+    {% endif %}
 {% else %}
     <div class="no-medications">
         <p>No pending medications. <a href="{% url 'medications:add_medication' %}">Add your first medication</a>!</p>
@@ -79,7 +104,7 @@
 {% endif %}
 
 <!-- Taken Medications -->
-<h2>Recently Taken Medications</h2>
+<h2>Recently Taken Medications (Page {{ taken_medications.number }} of {{ taken_medications.paginator.num_pages }})</h2>
 {% if taken_medications %}
     {% for medication in taken_medications %}
         <div class="medication-card taken">
@@ -100,9 +125,34 @@
             </div>
         </div>
     {% endfor %}
+    
+    <!-- Taken Medications Pagination -->
+    {% if taken_medications.paginator.num_pages > 1 %}
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if taken_medications.has_previous %}
+                <a href="?taken_page=1{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}" class="pagination-btn">« First</a>
+                <a href="?taken_page={{ taken_medications.previous_page_number }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}" class="pagination-btn">‹ Previous</a>
+            {% endif %}
+            
+            <span class="pagination-info">
+                Page {{ taken_medications.number }} of {{ taken_medications.paginator.num_pages }}
+            </span>
+            
+            {% if taken_medications.has_next %}
+                <a href="?taken_page={{ taken_medications.next_page_number }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}" class="pagination-btn">Next ›</a>
+                <a href="?taken_page={{ taken_medications.paginator.num_pages }}{% if request.GET.pending_page %}&pending_page={{ request.GET.pending_page }}{% endif %}" class="pagination-btn">Last »</a>
+            {% endif %}
+        </div>
+        <div class="pagination-summary">
+            Showing {{ taken_medications.start_index }}-{{ taken_medications.end_index }} of {{ taken_medications.paginator.count }} taken medications
+        </div>
+    </div>
+    {% endif %}
 {% else %}
     <div class="no-medications">
         <p>No medications marked as taken yet.</p>
     </div>
 {% endif %}
+</div>
 {% endblock %}
